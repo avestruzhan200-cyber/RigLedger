@@ -175,6 +175,7 @@
         </section>
     </main>
 
+    <!-- Modal: Add/Edit Single Part -->
     <div id="single-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-4 border-b border-slate-800">
@@ -234,6 +235,7 @@
         </div>
     </div>
 
+    <!-- Modal: Add/Edit Bundle Lot -->
     <div id="bundle-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
@@ -281,6 +283,7 @@
         </div>
     </div>
 
+    <!-- Alert Modal -->
     <div id="custom-alert" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
             <div class="text-3xl text-indigo-400">
@@ -382,7 +385,7 @@
 
             const defaultVal = part.sellingPrice !== undefined ? part.sellingPrice : '';
             const input = prompt(`Enter Sold Price for "${part.name}" (₱):`, defaultVal);
-            if (input === null) return; // Cancelled
+            if (input === null) return;
 
             const soldPrice = parseFloat(input);
             if (isNaN(soldPrice) || soldPrice < 0) {
@@ -406,7 +409,7 @@
 
             const defaultVal = item.targetPrice !== undefined ? item.targetPrice : '';
             const input = prompt(`Enter Sold Price for "${item.name}" (₱):`, defaultVal);
-            if (input === null) return; // Cancelled
+            if (input === null) return;
 
             const soldPrice = parseFloat(input);
             if (isNaN(soldPrice) || soldPrice < 0) {
