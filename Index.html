@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Parts Marketplace & Profit Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 text-white">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">Rig Ledger PH</h1>
+                    <p class="text-xs text-slate-400">PC Parts Flipping & Bundle Tracker</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openSingleModal()" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Add Single Part</span>
+                </button>
+                <button onclick="openBundleModal()" class="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-boxes-packing text-xs"></i>
+                    <span>Add Bundle Lot</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 overflow-y-auto">
+        <!-- Metrics Overview Section -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Invested Card -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Invested</span>
+                    <span class="bg-blue-500/10 text-blue-400 text-xs px-2.5 py-1 rounded-full font-medium">Outflow</span>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-invested" class="text-2xl font-bold text-white">₱0.00</h3>
+                </div>
+            </div>
+
+            <!-- Total Revenue Card -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-cash-register"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Revenue</span>
+                    <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium">Inflow</span>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-revenue" class="text-2xl font-bold text-white">₱0.00</h3>
+                </div>
+            </div>
+
+            <!-- Net Profit Card -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Net Profit</span>
+                    <span id="stat-profit-badge" class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full font-medium">Margin: 0%</span>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-profit" class="text-2xl font-bold text-white">₱0.00</h3>
+                </div>
+            </div>
+
+            <!-- Inventory Counts Card -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Inventory Items</span>
+                    <span class="bg-indigo-500/10 text-indigo-400 text-xs px-2.5 py-1 rounded-full font-medium">Stock</span>
+                </div>
+                <div class="mt-4 flex items-baseline space-x-2">
+                    <h3 id="stat-instock" class="text-2xl font-bold text-white">0</h3>
+                    <span class="text-sm text-slate-400">In Stock / <span id="stat-sold" class="text-emerald-400">0</span> Sold</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs & Search Filter -->
+        <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+                <button onclick="switchTab('single')" id="tab-btn-single" class="flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                    <i class="fa-solid fa-microchip mr-1.5"></i> Single Parts (<span id="count-single">0</span>)
+                </button>
+                <button onclick="switchTab('bundle')" id="tab-btn-bundle" class="flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-boxes-packing mr-1.5"></i> Bundle Lots (<span id="count-bundle">0</span>)
+                </button>
+            </div>
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+                <input type="text" id="search-input" oninput="renderApp()" placeholder="Search items or bundles..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+            </div>
+        </section>
+
+        <!-- Main Content Container: Single Parts View -->
+        <section id="view-single" class="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/30">
+                <h3 class="font-bold text-white text-sm uppercase tracking-wider flex items-center">
+                    <i class="fa-solid fa-microchip text-indigo-400 mr-2"></i> Individual PC Parts Inventory
+                </h3>
+                <div class="flex items-center space-x-2">
+                    <select id="filter-single-status" onchange="renderApp()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                        <option value="ALL">All Status</option>
+                        <option value="In Stock">In Stock</option>
+                        <option value="Sold">Sold</option>
+                    </select>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 bg-slate-950/50 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">Part Name</th>
+                            <th class="py-3.5 px-4">Category</th>
+                            <th class="py-3.5 px-4">Cost / Sell Price</th>
+                            <th class="py-3.5 px-4">Profit / ROI</th>
+                            <th class="py-3.5 px-4">Status</th>
+                            <th class="py-3.5 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="single-table-body" class="divide-y divide-slate-800/60 text-sm">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Empty State Single -->
+            <div id="empty-single" class="hidden flex flex-col items-center justify-center py-16 px-4 text-center">
+                <div class="bg-slate-800/50 p-4 rounded-full text-slate-600 text-3xl mb-3">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h4 class="text-slate-300 font-medium">No single parts found</h4>
+                <p class="text-slate-500 text-xs mt-1">Click "Add Single Part" to log your components.</p>
+            </div>
+        </section>
+
+        <!-- Main Content Container: Bundle Lots View -->
+        <section id="view-bundle" class="space-y-6 hidden">
+            <div id="bundles-container" class="space-y-6">
+                <!-- Populated via JS -->
+            </div>
+            <!-- Empty State Bundle -->
+            <div id="empty-bundle" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-col items-center justify-center py-16 px-4 text-center">
+                <div class="bg-slate-800/50 p-4 rounded-full text-slate-600 text-3xl mb-3">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                </div>
+                <h4 class="text-slate-300 font-medium">No bundle lots recorded</h4>
+                <p class="text-slate-500 text-xs mt-1">Record a bundle purchase (e.g. CPU+Mobo+RAM combo) and list your individual target selling prices.</p>
+                <button onclick="openBundleModal()" class="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 rounded-xl font-medium transition-all">Add Bundle Lot</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="single-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <h3 id="single-modal-title" class="text-lg font-bold text-white">Add Single PC Part</h3>
+                <button onclick="closeSingleModal()" class="text-slate-400 hover:text-white p-2 rounded-lg transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="single-form" onsubmit="handleSingleSubmit(event)" class="space-y-4 pt-4">
+                <input type="hidden" id="single-id">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Part Name *</label>
+                    <input type="text" id="single-name" required placeholder="e.g., NVIDIA RTX 3070 8GB" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Category *</label>
+                        <select id="single-category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="CPU">CPU</option>
+                            <option value="GPU">GPU</option>
+                            <option value="RAM">RAM</option>
+                            <option value="Storage">Storage</option>
+                            <option value="Motherboard">Motherboard</option>
+                            <option value="Power Supply">Power Supply</option>
+                            <option value="Case">Case</option>
+                            <option value="Cooler">Cooler</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Status *</label>
+                        <select id="single-status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="In Stock">In Stock</option>
+                            <option value="Sold">Sold</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Purchase Price (₱) *</label>
+                        <input type="number" step="0.01" min="0" id="single-purchase-price" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Selling Price (₱)</label>
+                        <input type="number" step="0.01" min="0" id="single-selling-price" placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Notes / Specs</label>
+                    <textarea id="single-notes" rows="2" placeholder="Condition, warranty, boxed..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeSingleModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all">Save Part</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="bundle-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
+                <h3 id="bundle-modal-title" class="text-lg font-bold text-white">Add Bundle Lot Purchase</h3>
+                <button onclick="closeBundleModal()" class="text-slate-400 hover:text-white p-2 rounded-lg transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="bundle-form" onsubmit="handleBundleSubmit(event)" class="space-y-5 pt-4">
+                <input type="hidden" id="bundle-id">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Bundle Name / Reference *</label>
+                        <input type="text" id="bundle-name-input" required placeholder="e.g., FB Marketplace Ryzen 5 Combo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Total Investment Cost (₱) *</label>
+                        <input type="number" step="0.01" min="0" id="bundle-cost-input" required placeholder="3000.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Purchase Date *</label>
+                    <input type="date" id="bundle-date-input" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- Individual Parts Inside Bundle Builder -->
+                <div class="space-y-3 pt-2 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-emerald-400 uppercase tracking-wider">Parts Included & Target Selling Prices</label>
+                        <button type="button" onclick="addBundleItemRow()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg font-medium transition-colors">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Item Row
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-400">Set a <strong>Target Selling Price</strong> to benchmark your returns against the investment cost. Update to the actual <strong>Sold Price</strong> once sold.</p>
+                    <div id="bundle-items-list" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                        <!-- Dynamic rows injected here -->
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="closeBundleModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">Cancel</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all">Save Bundle Lot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="custom-alert" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+            <div class="text-3xl text-indigo-400">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <div>
+                <h4 id="alert-title" class="text-base font-bold text-white">Notice</h4>
+                <p id="alert-message" class="text-sm text-slate-400 mt-1"></p>
+            </div>
+            <button onclick="closeAlert()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-sm font-semibold transition-all">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY_SINGLE = 'rig_ledger_singles_v4';
+        const STORAGE_KEY_BUNDLES = 'rig_ledger_bundles_v4';
+
+        // Sample initial data if storage is empty
+        const sampleSingles = [
+            { id: 's-1', name: 'AMD Ryzen 5 5600X', category: 'CPU', purchasePrice: 7200.00, sellingPrice: 9800.00, status: 'Sold', notes: 'Boxed with cooler' }
+        ];
+
+        const sampleBundles = [
+            {
+                id: 'b-1',
+                name: 'FB Marketplace Office PC Combo',
+                totalCost: 3000.00,
+                purchaseDate: '2026-02-01',
+                items: [
+                    { id: 'bi-1', name: 'Intel Core i5-4570 CPU', category: 'CPU', targetPrice: 2500.00, soldPrice: 2000.00, status: 'Sold' },
+                    { id: 'bi-2', name: '8GB DDR3 1600MHz RAM', category: 'RAM', targetPrice: 2000.00, soldPrice: 0, status: 'In Stock' }
+                ]
+            }
+        ];
+
+        // LocalStorage Helpers
+        function getSingles() {
+            const data = localStorage.getItem(STORAGE_KEY_SINGLE);
+            if (!data) {
+                localStorage.setItem(STORAGE_KEY_SINGLE, JSON.stringify(sampleSingles));
+                return sampleSingles;
+            }
+            try { return JSON.parse(data); } catch (e) { return []; }
+        }
+        function saveSingles(items) {
+            localStorage.setItem(STORAGE_KEY_SINGLE, JSON.stringify(items));
+        }
+
+        function getBundles() {
+            const data = localStorage.getItem(STORAGE_KEY_BUNDLES);
+            if (!data) {
+                localStorage.setItem(STORAGE_KEY_BUNDLES, JSON.stringify(sampleBundles));
+                return sampleBundles;
+            }
+            try { return JSON.parse(data); } catch (e) { return []; }
+        }
+        function saveBundles(items) {
+            localStorage.setItem(STORAGE_KEY_BUNDLES, JSON.stringify(items));
+        }
+
+        // UI Alert Dialog
+        function showAlert(title, message) {
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-message').innerText = message;
+            document.getElementById('custom-alert').classList.remove('hidden');
+        }
+        function closeAlert() {
+            document.getElementById('custom-alert').classList.add('hidden');
+        }
+
+        // Tab Switching
+        let currentTab = 'single';
+        function switchTab(tab) {
+            currentTab = tab;
+            const singleView = document.getElementById('view-single');
+            const bundleView = document.getElementById('view-bundle');
+            const singleBtn = document.getElementById('tab-btn-single');
+            const bundleBtn = document.getElementById('tab-btn-bundle');
+
+            if (tab === 'single') {
+                singleView.classList.remove('hidden');
+                bundleView.classList.add('hidden');
+                singleBtn.className = 'flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-600/20';
+                bundleBtn.className = 'flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700';
+            } else {
+                singleView.classList.add('hidden');
+                bundleView.classList.remove('hidden');
+                bundleBtn.className = 'flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/20';
+                singleBtn.className = 'flex-1 md:flex-initial px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700';
+            }
+            renderApp();
+        }
+
+        // Quick Mark Single Part as Sold
+        function quickMarkSingleSold(id) {
+            let singles = getSingles();
+            const part = singles.find(p => p.id === id);
+            if (!part) return;
+
+            const defaultVal = part.sellingPrice !== undefined ? part.sellingPrice : '';
+            const input = prompt(`Enter Sold Price for "${part.name}" (₱):`, defaultVal);
+            if (input === null) return; // Cancelled
+
+            const soldPrice = parseFloat(input);
+            if (isNaN(soldPrice) || soldPrice < 0) {
+                showAlert('Invalid Input', 'Please enter a valid sold price.');
+                return;
+            }
+
+            part.status = 'Sold';
+            part.sellingPrice = soldPrice;
+            saveSingles(singles);
+            renderApp();
+        }
+
+        // Quick Mark Bundle Item as Sold
+        function quickMarkItemSold(bundleId, itemId) {
+            let bundles = getBundles();
+            const bundle = bundles.find(b => b.id === bundleId);
+            if (!bundle) return;
+            const item = bundle.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            const defaultVal = item.targetPrice !== undefined ? item.targetPrice : '';
+            const input = prompt(`Enter Sold Price for "${item.name}" (₱):`, defaultVal);
+            if (input === null) return; // Cancelled
+
+            const soldPrice = parseFloat(input);
+            if (isNaN(soldPrice) || soldPrice < 0) {
+                showAlert('Invalid Input', 'Please enter a valid sold price.');
+                return;
+            }
+
+            item.status = 'Sold';
+            item.soldPrice = soldPrice;
+            item.sellingPrice = soldPrice;
+            saveBundles(bundles);
+            renderApp();
+        }
+
+        // Modal Controls for Single Parts
+        function openSingleModal(id = null) {
+            const modal = document.getElementById('single-modal');
+            const form = document.getElementById('single-form');
+            form.reset();
+            document.getElementById('single-id').value = '';
+
+            if (id) {
+                document.getElementById('single-modal-title').innerText = 'Edit Single PC Part';
+                const singles = getSingles();
+                const part = singles.find(p => p.id === id);
+                if (part) {
+                    document.getElementById('single-id').value = part.id;
+                    document.getElementById('single-name').value = part.name;
+                    document.getElementById('single-category').value = part.category;
+                    document.getElementById('single-status').value = part.status;
+                    document.getElementById('single-purchase-price').value = part.purchasePrice;
+                    document.getElementById('single-selling-price').value = part.sellingPrice || '';
+                    document.getElementById('single-notes').value = part.notes || '';
+                }
+            } else {
+                document.getElementById('single-modal-title').innerText = 'Add Single PC Part';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeSingleModal() {
+            document.getElementById('single-modal').classList.add('hidden');
+        }
+
+        function handleSingleSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('single-id').value;
+            const name = document.getElementById('single-name').value.trim();
+            const category = document.getElementById('single-category').value;
+            const status = document.getElementById('single-status').value;
+            const purchasePrice = parseFloat(document.getElementById('single-purchase-price').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('single-selling-price').value) || 0;
+            const notes = document.getElementById('single-notes').value.trim();
+
+            if (status === 'Sold' && sellingPrice <= 0) {
+                showAlert('Validation Warning', 'Please provide a valid selling price for sold parts.');
+                return;
+            }
+
+            let singles = getSingles();
+            if (id) {
+                singles = singles.map(p => p.id === id ? { ...p, name, category, status, purchasePrice, sellingPrice, notes } : p);
+            } else {
+                const newPart = { id: 's-' + Date.now(), name, category, status, purchasePrice, sellingPrice, notes };
+                singles.unshift(newPart);
+            }
+
+            saveSingles(singles);
+            closeSingleModal();
+            renderApp();
+        }
+
+        function deleteSingle(id) {
+            if (!confirm("Are you sure you want to delete this part?")) return;
+            let singles = getSingles();
+            singles = singles.filter(p => p.id !== id);
+            saveSingles(singles);
+            renderApp();
+        }
+
+        // Modal Controls for Bundle Lots
+        function openBundleModal(bundleId = null) {
+            const modal = document.getElementById('bundle-modal');
+            const form = document.getElementById('bundle-form');
+            form.reset();
+            document.getElementById('bundle-id').value = '';
+            document.getElementById('bundle-date-input').valueAsDate = new Date();
+            document.getElementById('bundle-items-list').innerHTML = '';
+
+            if (bundleId) {
+                document.getElementById('bundle-modal-title').innerText = 'Edit Bundle Lot';
+                const bundles = getBundles();
+                const bundle = bundles.find(b => b.id === bundleId);
+                if (bundle) {
+                    document.getElementById('bundle-id').value = bundle.id;
+                    document.getElementById('bundle-name-input').value = bundle.name;
+                    document.getElementById('bundle-cost-input').value = bundle.totalCost;
+                    document.getElementById('bundle-date-input').value = bundle.purchaseDate;
+                    bundle.items.forEach(item => {
+                        addBundleItemRow(item);
+                    });
+                }
+            } else {
+                document.getElementById('bundle-modal-title').innerText = 'Add Bundle Lot Purchase';
+                addBundleItemRow();
+                addBundleItemRow();
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeBundleModal() {
+            document.getElementById('bundle-modal').classList.add('hidden');
+        }
+
+        function addBundleItemRow(data = null) {
+            const container = document.getElementById('bundle-items-list');
+            const div = document.createElement('div');
+            div.className = 'bg-slate-950/60 border border-slate-800 rounded-xl p-3 space-y-3 relative group';
+            div.innerHTML = `
+                <div class="flex items-center justify-between gap-2">
+                    <input type="text" placeholder="Part Name (e.g. i5-4570 CPU)" value="${data && data.name ? escapeHtml(data.name) : ''}" class="bundle-item-name flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500" required>
+                    <select class="bundle-item-category bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                        <option value="CPU" ${data && data.category === 'CPU' ? 'selected' : ''}>CPU</option>
+                        <option value="GPU" ${data && data.category === 'GPU' ? 'selected' : ''}>GPU</option>
+                        <option value="RAM" ${data && data.category === 'RAM' ? 'selected' : ''}>RAM</option>
+                        <option value="Storage" ${data && data.category === 'Storage' ? 'selected' : ''}>Storage</option>
+                        <option value="Motherboard" ${data && data.category === 'Motherboard' ? 'selected' : ''}>Motherboard</option>
+                        <option value="Power Supply" ${data && data.category === 'Power Supply' ? 'selected' : ''}>Power Supply</option>
+                        <option value="Case" ${data && data.category === 'Case' ? 'selected' : ''}>Case</option>
+                        <option value="Cooler" ${data && data.category === 'Cooler' ? 'selected' : ''}>Cooler</option>
+                        <option value="Other" ${data && data.category === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                    <button type="button" onclick="this.closest('.group').remove()" class="text-slate-500 hover:text-rose-400 p-1.5 transition-colors" title="Remove Row">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-0.5">Target Selling Price (₱)</label>
+                        <input type="number" step="0.01" min="0" placeholder="0.00" value="${data && (data.targetPrice !== undefined ? data.targetPrice : data.sellingPrice) ? (data.targetPrice !== undefined ? data.targetPrice : data.sellingPrice) : ''}" class="bundle-item-target w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-0.5">Status</label>
+                        <select class="bundle-item-status w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                            <option value="In Stock" ${data && data.status === 'In Stock' ? 'selected' : ''}>In Stock</option>
+                            <option value="Sold" ${data && data.status === 'Sold' ? 'selected' : ''}>Sold</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-0.5">Sold Price (₱ if sold)</label>
+                        <input type="number" step="0.01" min="0" placeholder="0.00" value="${data && data.soldPrice ? data.soldPrice : ''}" class="bundle-item-sold w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function handleBundleSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('bundle-id').value;
+            const name = document.getElementById('bundle-name-input').value.trim();
+            const totalCost = parseFloat(document.getElementById('bundle-cost-input').value) || 0;
+            const purchaseDate = document.getElementById('bundle-date-input').value;
+            const rowElements = document.querySelectorAll('#bundle-items-list > div');
+
+            if (rowElements.length === 0) {
+                showAlert('Validation Warning', 'Please add at least one part inside the bundle lot.');
+                return;
+            }
+
+            let items = [];
+            rowElements.forEach((row, index) => {
+                const itemName = row.querySelector('.bundle-item-name').value.trim();
+                const category = row.querySelector('.bundle-item-category').value;
+                const targetPrice = parseFloat(row.querySelector('.bundle-item-target').value) || 0;
+                const status = row.querySelector('.bundle-item-status').value;
+                const soldPrice = parseFloat(row.querySelector('.bundle-item-sold').value) || 0;
+
+                if (itemName) {
+                    items.push({
+                        id: 'bi-' + Date.now() + '-' + index,
+                        name: itemName,
+                        category: category,
+                        targetPrice: targetPrice,
+                        sellingPrice: status === 'Sold' ? soldPrice : targetPrice,
+                        soldPrice: status === 'Sold' ? soldPrice : 0,
+                        status: status
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                showAlert('Validation Warning', 'Please enter valid part names for the bundle.');
+                return;
+            }
+
+            let bundles = getBundles();
+            if (id) {
+                bundles = bundles.map(b => b.id === id ? { ...b, name, totalCost, purchaseDate, items } : b);
+            } else {
+                const newBundle = { id: 'b-' + Date.now(), name, totalCost, purchaseDate, items };
+                bundles.unshift(newBundle);
+            }
+
+            saveBundles(bundles);
+            closeBundleModal();
+            renderApp();
+        }
+
+        function deleteBundle(id) {
+            if (!confirm("Are you sure you want to delete this bundle?")) return;
+            let bundles = getBundles();
+            bundles = bundles.filter(b => b.id !== id);
+            saveBundles(bundles);
+            renderApp();
+        }
+
+        // Main App Render & Metrics Calculation
+        function renderApp() {
+            const singles = getSingles();
+            const bundles = getBundles();
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const singleStatusFilter = document.getElementById('filter-single-status').value;
+
+            document.getElementById('count-single').innerText = singles.length;
+            document.getElementById('count-bundle').innerText = bundles.length;
+
+            let totalInvested = 0;
+            let totalRevenue = 0;
+            let totalInStockCount = 0;
+            let totalSoldCount = 0;
+
+            singles.forEach(s => {
+                totalInvested += Number(s.purchasePrice) || 0;
+                if (s.status === 'Sold') {
+                    totalRevenue += Number(s.sellingPrice) || 0;
+                    totalSoldCount++;
+                } else {
+                    totalInStockCount++;
+                }
+            });
+
+            bundles.forEach(b => {
+                totalInvested += Number(b.totalCost) || 0;
+                b.items.forEach(item => {
+                    if (item.status === 'Sold') {
+                        const actualSold = item.soldPrice !== undefined ? Number(item.soldPrice) : Number(item.sellingPrice) || 0;
+                        totalRevenue += actualSold;
+                        totalSoldCount++;
+                    } else {
+                        totalInStockCount++;
+                    }
+                });
+            });
+
+            const netProfit = totalRevenue - totalInvested;
+            const profitMargin = totalInvested > 0 ? ((netProfit / totalInvested) * 100).toFixed(1) : 0;
+
+            document.getElementById('stat-invested').innerText = `₱${totalInvested.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('stat-revenue').innerText = `₱${totalRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            const profitEl = document.getElementById('stat-profit');
+            profitEl.innerText = `₱${netProfit.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (netProfit > 0) {
+                profitEl.className = 'text-2xl font-bold text-emerald-400';
+            } else if (netProfit < 0) {
+                profitEl.className = 'text-2xl font-bold text-rose-400';
+            } else {
+                profitEl.className = 'text-2xl font-bold text-white';
+            }
+
+            const profitBadge = document.getElementById('stat-profit-badge');
+            profitBadge.innerText = `Margin: ${profitMargin}%`;
+            if (netProfit > 0) {
+                profitBadge.className = 'bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium';
+            } else if (netProfit < 0) {
+                profitBadge.className = 'bg-rose-500/10 text-rose-400 text-xs px-2.5 py-1 rounded-full font-medium';
+            } else {
+                profitBadge.className = 'bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full font-medium';
+            }
+
+            document.getElementById('stat-instock').innerText = totalInStockCount;
+            document.getElementById('stat-sold').innerText = totalSoldCount;
+
+            // --- RENDER SINGLES TABLE ---
+            const filteredSingles = singles.filter(s => {
+                const matchesSearch = s.name.toLowerCase().includes(searchTerm) || (s.notes && s.notes.toLowerCase().includes(searchTerm));
+                const matchesStatus = singleStatusFilter === 'ALL' || s.status === singleStatusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            const singleTbody = document.getElementById('single-table-body');
+            const emptySingle = document.getElementById('empty-single');
+            singleTbody.innerHTML = '';
+
+            if (filteredSingles.length === 0) {
+                emptySingle.classList.remove('hidden');
+            } else {
+                emptySingle.classList.add('hidden');
+                filteredSingles.forEach(s => {
+                    const isSold = s.status === 'Sold';
+                    const profit = isSold ? (s.sellingPrice - s.purchasePrice) : 0;
+                    const roi = (isSold && s.purchasePrice > 0) ? ((profit / s.purchasePrice) * 100).toFixed(1) : 0;
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-900/50 transition-colors';
+                    tr.innerHTML = `
+                        <td class="py-4 px-6">
+                            <span class="font-semibold text-white block">${escapeHtml(s.name)}</span>
+                            ${s.notes ? `<span class="text-xs text-slate-400 block truncate max-w-xs">${escapeHtml(s.notes)}</span>` : ''}
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">${escapeHtml(s.category)}</span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="text-slate-200 font-medium">Cost: ₱${Number(s.purchasePrice).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">${isSold ? `Sold: <span class="text-emerald-400 font-semibold">₱${Number(s.sellingPrice).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : `Target: <span class="text-indigo-300 font-semibold">₱${Number(s.sellingPrice).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`}</div>
+                        </td>
+                        <td class="py-4 px-4">
+                            ${isSold ? `
+                                <div class="font-semibold ${profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${profit >= 0 ? '+' : ''}₱${Math.abs(profit).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${roi}% ROI</div>
+                            ` : '<span class="text-xs text-slate-500">-</span>'}
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${isSold ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                                <span class="w-1.5 h-1.5 rounded-full ${isSold ? 'bg-emerald-400' : 'bg-blue-400'} mr-1.5"></span> ${escapeHtml(s.status)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-right space-x-1">
+                            ${!isSold ? `
+                                <button onclick="quickMarkSingleSold('${s.id}')" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all inline-flex items-center space-x-1" title="Mark as Sold">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>Sold</span>
+                                </button>
+                            ` : ''}
+                            <button onclick="openSingleModal('${s.id}')" class="text-slate-400 hover:text-indigo-400 p-1.5 transition-colors" title="Edit Part">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteSingle('${s.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 transition-colors" title="Delete Part">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    singleTbody.appendChild(tr);
+                });
+            }
+
+            // --- RENDER BUNDLES CARDS ---
+            const filteredBundles = bundles.filter(b => {
+                const matchesBundleName = b.name.toLowerCase().includes(searchTerm);
+                const matchesItemName = b.items.some(i => i.name.toLowerCase().includes(searchTerm));
+                return matchesBundleName || matchesItemName;
+            });
+
+            const bundleContainer = document.getElementById('bundles-container');
+            const emptyBundle = document.getElementById('empty-bundle');
+            bundleContainer.innerHTML = '';
+
+            if (filteredBundles.length === 0) {
+                emptyBundle.classList.remove('hidden');
+            } else {
+                emptyBundle.classList.add('hidden');
+                filteredBundles.forEach(b => {
+                    let bundleTargetRevenue = 0;
+                    let bundleTotalSoldRevenue = 0;
+
+                    b.items.forEach(item => {
+                        const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
+                        bundleTargetRevenue += target;
+                        if (item.status === 'Sold') {
+                            const sold = item.soldPrice !== undefined ? Number(item.soldPrice) : 0;
+                            bundleTotalSoldRevenue += sold;
+                        }
+                    });
+
+                    const potentialProfit = bundleTargetRevenue - Number(b.totalCost);
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden';
+
+                    let itemsHtml = '';
+                    b.items.forEach(item => {
+                        const isSold = item.status === 'Sold';
+                        const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
+                        const sold = item.soldPrice !== undefined ? Number(item.soldPrice) : 0;
+
+                        itemsHtml += `
+                            <tr class="hover:bg-slate-950/40 transition-colors">
+                                <td class="py-3 px-4 font-medium text-white">${escapeHtml(item.name)}</td>
+                                <td class="py-3 px-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">${escapeHtml(item.category)}</span>
+                                </td>
+                                <td class="py-3 px-3 text-slate-200">₱${target.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="py-3 px-3">${isSold ? `<span class="text-emerald-400 font-semibold">₱${sold.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : '<span class="italic text-slate-500">Not Sold</span>'}</td>
+                                <td class="py-3 px-3 flex items-center justify-between">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${isSold ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                                        ${escapeHtml(item.status)}
+                                    </span>
+                                    ${!isSold ? `
+                                        <button onclick="quickMarkItemSold('${b.id}', '${item.id}')" class="ml-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1" title="Mark as Sold">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            <span>Sold</span>
+                                        </button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="p-5 border-b border-slate-800 bg-slate-950/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-emerald-500/20"><i class="fa-solid fa-boxes-packing mr-1"></i>Bundle Lot</span>
+                                    <h4 class="text-base font-bold text-white">${escapeHtml(b.name)}</h4>
+                                </div>
+                                <div class="text-xs text-slate-400 mt-1 flex items-center space-x-4">
+                                    <span>Purchased: <strong class="text-slate-200">${escapeHtml(b.purchaseDate)}</strong></span>
+                                    <span>Total Bundle Cost: <strong class="text-blue-400">₱${Number(b.totalCost).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-right">
+                                    <div class="text-xs text-slate-400">Total Sold Revenue</div>
+                                    <div class="text-sm font-bold text-emerald-400">₱${bundleTotalSoldRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                                </div>
+                                <div class="text-right border-l border-slate-800 pl-4">
+                                    <div class="text-xs text-slate-400">Target Profit vs Cost</div>
+                                    <div class="text-sm font-bold ${potentialProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${potentialProfit >= 0 ? '+' : ''}₱${Math.abs(potentialProfit).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                                </div>
+                                <div class="flex items-center space-x-1 border-l border-slate-800 pl-3">
+                                    <button onclick="openBundleModal('${b.id}')" class="text-slate-400 hover:text-indigo-400 p-2 transition-colors" title="Edit Bundle">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="deleteBundle('${b.id}')" class="text-slate-400 hover:text-rose-400 p-2 transition-colors" title="Delete Bundle">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="border-b border-slate-800 bg-slate-950/20 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-2.5 px-4">Part Inside Bundle</th>
+                                        <th class="py-2.5 px-3">Category</th>
+                                        <th class="py-2.5 px-3">Target Selling Price</th>
+                                        <th class="py-2.5 px-3">Sold Price</th>
+                                        <th class="py-2.5 px-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/50">
+                                    ${itemsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    bundleContainer.appendChild(card);
+                });
+            }
+        }
+
+        // XSS Helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        window.onload = function() {
+            renderApp();
+        };
+    </script>
+</body>
+</html>
