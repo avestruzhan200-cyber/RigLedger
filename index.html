@@ -342,10 +342,11 @@
                 renderApp();
             } catch (error) {
                 console.error("Error loading data from Firestore:", error);
-                showAlert("Connection Error", "Could not fetch data from Firebase. Check console for details.");
+                // Displays the real error on screen to help diagnose quickly
+                showAlert("Firebase Error", error.message || "Could not fetch data. Check your Firestore setup.");
             }
         }
-
+        
         async function fetchSingles() {
             const querySnapshot = await window.firebaseGetDocs(window.firebaseCollection(window.db, "singles"));
             singlesCache = [];
