@@ -313,12 +313,10 @@
             measurementId: "G-DB135HP7SB"
         };
 
-        // Initialize Firebase & Analytics
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // Expose functions globally for the app UI controller
         window.db = db;
         window.firebaseCollection = collection;
         window.firebaseGetDocs = getDocs;
@@ -327,7 +325,6 @@
         window.firebaseDeleteDoc = deleteDoc;
         window.firebaseDoc = doc;
 
-        // Load data on start
         window.initFirebaseAppData();
     </script>
 
@@ -342,7 +339,6 @@
                 renderApp();
             } catch (error) {
                 console.error("Error loading data from Firestore:", error);
-                // Displays the real error on screen to help diagnose quickly
                 showAlert("Firebase Error", error.message || "Could not fetch data. Check your Firestore setup.");
             }
         }
@@ -366,7 +362,6 @@
         function getSingles() { return singlesCache; }
         function getBundles() { return bundlesCache; }
 
-        // UI Alert Dialog
         function showAlert(title, message) {
             document.getElementById('alert-title').innerText = title;
             document.getElementById('alert-message').innerText = message;
@@ -376,7 +371,6 @@
             document.getElementById('custom-alert').classList.add('hidden');
         }
 
-        // Tab Switching
         let currentTab = 'single';
         function switchTab(tab) {
             currentTab = tab;
@@ -399,7 +393,6 @@
             renderApp();
         }
 
-        // Quick Mark Single Part as Sold
         async function quickMarkSingleSold(id) {
             const singles = getSingles();
             const part = singles.find(p => p.id === id);
@@ -426,7 +419,6 @@
             }
         }
 
-        // Quick Mark Bundle Item as Sold
         async function quickMarkItemSold(bundleId, itemId) {
             const bundles = getBundles();
             const bundle = bundles.find(b => b.id === bundleId);
@@ -459,7 +451,6 @@
             }
         }
 
-        // Modal Controls for Single Parts
         function openSingleModal(id = null) {
             const modal = document.getElementById('single-modal');
             const form = document.getElementById('single-form');
@@ -532,7 +523,6 @@
             }
         }
 
-        // Modal Controls for Bundle Lots
         function openBundleModal(bundleId = null) {
             const modal = document.getElementById('bundle-modal');
             const form = document.getElementById('bundle-form');
@@ -676,7 +666,6 @@
             }
         }
 
-        // Main App Render & Metrics Calculation
         function renderApp() {
             const singles = getSingles();
             const bundles = getBundles();
@@ -743,7 +732,6 @@
             document.getElementById('stat-instock').innerText = totalInStockCount;
             document.getElementById('stat-sold').innerText = totalSoldCount;
 
-            // --- RENDER SINGLES TABLE ---
             const filteredSingles = singles.filter(s => {
                 const matchesSearch = s.name.toLowerCase().includes(searchTerm) || (s.notes && s.notes.toLowerCase().includes(searchTerm));
                 const matchesStatus = singleStatusFilter === 'ALL' || s.status === singleStatusFilter;
@@ -807,7 +795,6 @@
                 });
             }
 
-            // --- RENDER BUNDLES CARDS ---
             const filteredBundles = bundles.filter(b => {
                 const matchesBundleName = b.name.toLowerCase().includes(searchTerm);
                 const matchesItemName = b.items.some(i => i.name.toLowerCase().includes(searchTerm));
@@ -921,7 +908,6 @@
             }
         }
 
-        // XSS Helper
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, tag => ({
