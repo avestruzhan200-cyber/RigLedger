@@ -42,7 +42,7 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 overflow-y-auto">
         <!-- Metrics Overview Section -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             <!-- Total Invested Card -->
             <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
                 <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
@@ -82,6 +82,21 @@
                 </div>
                 <div class="mt-4">
                     <h3 id="stat-profit" class="text-2xl font-bold text-white">₱0.00</h3>
+                </div>
+            </div>
+
+            <!-- Expected Profit Card -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-7xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Expected Profit</span>
+                    <span class="bg-amber-500/10 text-amber-400 text-xs px-2.5 py-1 rounded-full font-medium">Projected</span>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-expected-profit" class="text-2xl font-bold text-white">₱0.00</h3>
+                    <p class="text-[11px] text-slate-500 mt-1">If remaining stock sells at target prices</p>
                 </div>
             </div>
 
@@ -423,7 +438,7 @@
             const bundles = getBundles();
             const bundle = bundles.find(b => b.id === bundleId);
             if (!bundle) return;
-            const item = bundle.items.find(i => i.id === itemId);
+            const item = (Array.isArray(bundle.items) ? bundle.items : []).find(i => i.id === itemId);
             if (!item) return;
 
             const defaultVal = item.targetPrice !== undefined ? item.targetPrice : '';
@@ -540,7 +555,7 @@
                     document.getElementById('bundle-name-input').value = bundle.name;
                     document.getElementById('bundle-cost-input').value = bundle.totalCost;
                     document.getElementById('bundle-date-input').value = bundle.purchaseDate;
-                    bundle.items.forEach(item => {
+                    (Array.isArray(bundle.items) ? bundle.items : []).forEach(item => {
                         addBundleItemRow(item);
                     });
                 }
@@ -677,6 +692,7 @@
 
             let totalInvested = 0;
             let totalRevenue = 0;
+            let expectedUnsoldRevenue = 0;
             let totalInStockCount = 0;
             let totalSoldCount = 0;
 
@@ -686,28 +702,43 @@
                     totalRevenue += Number(s.sellingPrice) || 0;
                     totalSoldCount++;
                 } else {
+                    expectedUnsoldRevenue += Number(s.sellingPrice) || 0;
                     totalInStockCount++;
                 }
             });
 
             bundles.forEach(b => {
                 totalInvested += Number(b.totalCost) || 0;
-                b.items.forEach(item => {
+                (Array.isArray(b.items) ? b.items : []).forEach(item => {
                     if (item.status === 'Sold') {
                         const actualSold = item.soldPrice !== undefined ? Number(item.soldPrice) : Number(item.sellingPrice) || 0;
                         totalRevenue += actualSold;
                         totalSoldCount++;
                     } else {
+                        const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
+                        expectedUnsoldRevenue += target;
                         totalInStockCount++;
                     }
                 });
             });
 
+            // Projected final profit = actual sales + target sales of remaining stock - all investment.
+            const expectedProfit = totalRevenue + expectedUnsoldRevenue - totalInvested;
             const netProfit = totalRevenue - totalInvested;
             const profitMargin = totalInvested > 0 ? ((netProfit / totalInvested) * 100).toFixed(1) : 0;
 
             document.getElementById('stat-invested').innerText = `₱${totalInvested.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('stat-revenue').innerText = `₱${totalRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            const expectedProfitEl = document.getElementById('stat-expected-profit');
+            expectedProfitEl.innerText = `${expectedProfit < 0 ? '-' : ''}₱${Math.abs(expectedProfit).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (expectedProfit > 0) {
+                expectedProfitEl.className = 'text-2xl font-bold text-emerald-400';
+            } else if (expectedProfit < 0) {
+                expectedProfitEl.className = 'text-2xl font-bold text-rose-400';
+            } else {
+                expectedProfitEl.className = 'text-2xl font-bold text-white';
+            }
 
             const profitEl = document.getElementById('stat-profit');
             profitEl.innerText = `₱${netProfit.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -813,7 +844,7 @@
                     let bundleTargetRevenue = 0;
                     let bundleTotalSoldRevenue = 0;
 
-                    b.items.forEach(item => {
+                    (Array.isArray(b.items) ? b.items : []).forEach(item => {
                         const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
                         bundleTargetRevenue += target;
                         if (item.status === 'Sold') {
@@ -830,7 +861,7 @@
                     card.className = 'bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden';
 
                     let itemsHtml = '';
-                    b.items.forEach(item => {
+                    (Array.isArray(b.items) ? b.items : []).forEach(item => {
                         const isSold = item.status === 'Sold';
                         const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
                         const sold = item.soldPrice !== undefined ? Number(item.soldPrice) : 0;
