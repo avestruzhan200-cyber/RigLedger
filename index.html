@@ -841,21 +841,29 @@
             } else {
                 emptyBundle.classList.add('hidden');
                 filteredBundles.forEach(b => {
-                    let bundleTargetRevenue = 0;
-                    let bundleTotalSoldRevenue = 0;
+                   let bundleTargetRevenue = 0;
+let bundleTotalSoldRevenue = 0;
+let bundleProjectedRevenue = 0; // sold price for sold items, target price for unsold
 
-                    (Array.isArray(b.items) ? b.items : []).forEach(item => {
-                        const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
-                        bundleTargetRevenue += target;
-                        if (item.status === 'Sold') {
-                            const sold = item.soldPrice !== undefined ? Number(item.soldPrice) : 0;
-                            bundleTotalSoldRevenue += sold;
-                        }
-                    });
+(Array.isArray(b.items) ? b.items : []).forEach(item => {
+    const target = item.targetPrice !== undefined ? Number(item.targetPrice) : Number(item.sellingPrice) || 0;
+    bundleTargetRevenue += target;
+    if (item.status === 'Sold') {
+        const sold = item.soldPrice !== undefined ? Number(item.soldPrice) : 0;
+        bundleTotalSoldRevenue += sold;
+        bundleProjectedRevenue += sold;
+    } else {
+        bundleProjectedRevenue += target;
+    }
+});
 
-                    // Actual profit = real sold revenue minus the bundle's total cost
-                    const actualProfit = bundleTotalSoldRevenue - Number(b.totalCost);
-                    const actualProfitSign = actualProfit > 0 ? '+' : (actualProfit < 0 ? '-' : '');
+// Actual profit = real sold revenue minus the bundle's total cost
+const actualProfit = bundleTotalSoldRevenue - Number(b.totalCost);
+const actualProfitSign = actualProfit > 0 ? '+' : (actualProfit < 0 ? '-' : '');
+
+// Expected profit = sold revenue + target of remaining stock minus the bundle's total cost
+const expectedProfit = bundleProjectedRevenue - Number(b.totalCost);
+const expectedProfitSign = expectedProfit > 0 ? '+' : (expectedProfit < 0 ? '-' : '');
 
                     const card = document.createElement('div');
                     card.className = 'bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden';
@@ -906,6 +914,10 @@
                                     <div class="text-xs text-slate-400">Total Sold Revenue</div>
                                     <div class="text-sm font-bold text-emerald-400">₱${bundleTotalSoldRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                                 </div>
+                                <div class="text-right border-l border-slate-800 pl-4">
+    <div class="text-xs text-slate-400">Expected Profit</div>
+    <div class="text-sm font-bold ${expectedProfit >= 0 ? 'text-amber-400' : 'text-rose-400'}">${expectedProfitSign}₱${Math.abs(expectedProfit).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+</div>
                                 <div class="text-right border-l border-slate-800 pl-4">
                                     <div class="text-xs text-slate-400">Actual Profit vs Cost</div>
                                     <div class="text-sm font-bold ${actualProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${actualProfitSign}₱${Math.abs(actualProfit).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
